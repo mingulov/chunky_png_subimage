@@ -69,7 +69,7 @@ static VALUE search_single_subimage(const unsigned int *img, const int imgWidth,
 			}
 		}
 		/* if 'break' has been used */
-		if (x != searchX + searchWidth)
+		if (x != searchX + searchWidth - subWidth)
 			break;
 	}
 
