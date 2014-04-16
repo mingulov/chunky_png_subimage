@@ -33,10 +33,10 @@ static VALUE search_single_subimage(const unsigned int *img, const int imgWidth,
 
 	c = sub[s1y * subWidth + s1x];
 
-	for (y = searchY; y < searchY + searchHeight; y++)
+	for (y = searchY; y < searchY + searchHeight - subHeight; y++)
 	{
 		int x = 0;
-		for (x = searchX; x < searchX + searchWidth; x++)
+		for (x = searchX; x < searchX + searchWidth - subWidth; x++)
 		{
 			if (img[(y + s1y) * imgWidth + x + s1x] == c)
 			{
