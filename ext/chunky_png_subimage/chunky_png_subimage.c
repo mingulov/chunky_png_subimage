@@ -8,5 +8,5 @@ void Init_chunky_png_subimage()
 {
 	VALUE mainModule = rb_define_module("ChunkyPNGSubimage");
 
-	rb_define_private_method(canvasModule, "_search_subimage", search_subimage, -2);
+	rb_define_singleton_method(mainModule, "_search_subimage", search_subimage, -2);
 }
