@@ -83,7 +83,7 @@ static unsigned int *convert_image(const VALUE *imgPixels, const int imgWidth, c
 	int i;
 	for(i = 0; i < imgHeight * imgWidth; i++)
 	{
-		imgReady[i] = FIX2UINT(imgPixels[i]);
+		imgReady[i] = NUM2UINT(imgPixels[i]);
 	}
 
 	return imgReady;
@@ -118,14 +118,14 @@ VALUE search_subimages(int argc, VALUE *argv, VALUE self)
 		rb_raise(rb_eArgError, "wrong number of arguments");
 
 	imgPixels = RARRAY_PTR(argv[0]);
-	imgWidth = FIX2INT(argv[1]);
-	imgHeight = FIX2INT(argv[2]);
-	searchX = FIX2INT(argv[3]);
-	searchY = FIX2INT(argv[4]);
-	searchWidth = FIX2INT(argv[5]);
-	searchHeight = FIX2INT(argv[6]);
-	singleMode = FIX2INT(argv[7]);
-	amountSubimages = FIX2INT(argv[8]);
+	imgWidth = NUM2INT(argv[1]);
+	imgHeight = NUM2INT(argv[2]);
+	searchX = NUM2INT(argv[3]);
+	searchY = NUM2INT(argv[4]);
+	searchWidth = NUM2INT(argv[5]);
+	searchHeight = NUM2INT(argv[6]);
+	singleMode = NUM2INT(argv[7]);
+	amountSubimages = NUM2INT(argv[8]);
 
 	/* some parameters checks */
 	if (searchX < 0)
@@ -152,8 +152,8 @@ VALUE search_subimages(int argc, VALUE *argv, VALUE self)
 	{
 		/* cur++ inside RARRAY_PTR might not be used as it is used in the macro multiple times */
 		const VALUE *subPixels = RARRAY_PTR(argv[cur]);
-		int subWidth = FIX2INT(argv[cur + 1]);
-		int subHeight = FIX2INT(argv[cur + 2]);
+		int subWidth = NUM2INT(argv[cur + 1]);
+		int subHeight = NUM2INT(argv[cur + 2]);
 		const unsigned int *subReady = convert_image(subPixels, subWidth, subHeight);
 
 		VALUE r = search_single_subimage(imgReady, imgWidth, imgHeight,
