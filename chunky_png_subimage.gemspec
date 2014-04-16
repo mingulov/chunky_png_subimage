@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.version       = ChunkyPNGSubimage::VERSION
   spec.authors       = ["Denis Mingulov"]
   spec.email         = ["denis@mingulov.com"]
-  spec.description   = %q{Support to search subimages for ChunkyPNG}
+  spec.description   = %q{Support to search subimages for ChunkyPNG - fast with ruby extension}
   spec.summary       = %q{Support to search subimages for ChunkyPNG}
   spec.homepage      = "http://github.com/mingulov/chunky_png_subimage"
   spec.license       = "MIT"

@@ -2,4 +2,4 @@ require 'mkmf'
 
 #have_func("labs", "stdlib.h")
 
-create_makefile('ext/chunky_png_subimage')
+create_makefile('chunky_png_subimage/chunky_png_subimage')
