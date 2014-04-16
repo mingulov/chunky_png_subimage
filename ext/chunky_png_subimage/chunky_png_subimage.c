@@ -13,6 +13,8 @@ static VALUE search_single_subimage(const unsigned int *img, const int imgWidth,
 
 	int s1y = 0;
 	int s1x = 0;
+	unsigned int c;
+	int y;
 
 	/* search 1st point usable to do the main search */
 	for (s1y = 0; s1y < subHeight; s1y++)
@@ -29,9 +31,9 @@ static VALUE search_single_subimage(const unsigned int *img, const int imgWidth,
 	if (s1y == subHeight)
 		rb_raise(rb_eStandardError, "Empty subimage is provided, no usable pixels");
 
-	const unsigned int c = sub[s1y * subWidth + s1x];
+	c = sub[s1y * subWidth + s1x];
 
-	for (int y = searchY; y < searchY + searchHeight; y++)
+	for (y = searchY; y < searchY + searchHeight; y++)
 	{
 		int x = 0;
 		for (x = searchX; x < searchX + searchWidth; x++)
@@ -78,7 +80,8 @@ static VALUE search_single_subimage(const unsigned int *img, const int imgWidth,
 static unsigned int *convert_image(const VALUE *imgPixels, const int imgWidth, const int imgHeight)
 {
 	unsigned int *imgReady = xmalloc(sizeof(unsigned int) * imgWidth * imgHeight);
-	for(int i = 0; i < imgHeight * imgWidth; i++)
+	int i;
+	for(i = 0; i < imgHeight * imgWidth; i++)
 	{
 		imgReady[i] = FIX2UINT(imgPixels[i]);
 	}
@@ -97,20 +100,32 @@ VALUE search_subimages(int argc, VALUE *argv, VALUE self)
 	end
 	 */
 
+	VALUE result = rb_ary_new();
+	const VALUE *imgPixels;
+	int imgWidth;
+	int imgHeight;
+	int searchX;
+	int searchY;
+	int searchWidth;
+	int searchHeight;
+	int singleMode;
+	int amountSubimages;
+	const unsigned int *imgReady;
+	int cur = 9;
+	int i;
+
 	if (argc < 12 || (argc - 9) % 3 != 0)
 		rb_raise(rb_eArgError, "wrong number of arguments");
 
-	VALUE result = rb_ary_new();
-
-	const VALUE *imgPixels = RARRAY_PTR(argv[0]);
-	int imgWidth = FIX2INT(argv[1]);
-	int imgHeight = FIX2INT(argv[2]);
-	int searchX = FIX2INT(argv[3]);
-	int searchY = FIX2INT(argv[4]);
-	int searchWidth = FIX2INT(argv[5]);
-	int searchHeight = FIX2INT(argv[6]);
-	int singleMode = FIX2INT(argv[7]);
-	int amountSubimages = FIX2INT(argv[8]);
+	imgPixels = RARRAY_PTR(argv[0]);
+	imgWidth = FIX2INT(argv[1]);
+	imgHeight = FIX2INT(argv[2]);
+	searchX = FIX2INT(argv[3]);
+	searchY = FIX2INT(argv[4]);
+	searchWidth = FIX2INT(argv[5]);
+	searchHeight = FIX2INT(argv[6]);
+	singleMode = FIX2INT(argv[7]);
+	amountSubimages = FIX2INT(argv[8]);
 
 	/* some parameters checks */
 	if (searchX < 0)
@@ -131,16 +146,14 @@ VALUE search_subimages(int argc, VALUE *argv, VALUE self)
 		searchHeight = imgHeight - searchY;
 
 	/* prepare image */
-	const unsigned int *imgReady = convert_image(imgPixels, imgWidth, imgHeight);
+	imgReady = convert_image(imgPixels, imgWidth, imgHeight);
 
-	int cur = 9;
-	for (int i = 0; i < amountSubimages; i++)
+	for (i = 0; i < amountSubimages; i++)
 	{
 		/* cur++ inside RARRAY_PTR might not be used as it is used in the macro multiple times */
 		const VALUE *subPixels = RARRAY_PTR(argv[cur]);
 		int subWidth = FIX2INT(argv[cur + 1]);
 		int subHeight = FIX2INT(argv[cur + 2]);
-		cur += 3;
 		const unsigned int *subReady = convert_image(subPixels, subWidth, subHeight);
 
 		VALUE r = search_single_subimage(imgReady, imgWidth, imgHeight,
@@ -153,6 +166,8 @@ VALUE search_subimages(int argc, VALUE *argv, VALUE self)
 
 		if ((singleMode & 1) && RARRAY_LEN(r) > 0)
 			break;
+
+		cur += 3;
 	}
 
 	xfree((void *)imgReady);
