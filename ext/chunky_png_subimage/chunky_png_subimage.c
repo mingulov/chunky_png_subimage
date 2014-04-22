@@ -1,10 +1,54 @@
+/** Ruby C extension 'chunky_png_subimage', source
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2014 Denis Mingulov
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "chunky_png_subimage.h"
 
+/** Check that the color from subimage is usable to search
+ * @param color Color to be checked
+ * @return 0 whether color is not usable, non-0 otherwise
+ */
 static inline int is_color_usable(unsigned int color)
 {
+	/* currently - fully opaque points are used only */
 	return (color & 0xff) == 0xff;
 }
 
+/** Search a single subimage inside image
+ * @param img Pointer to uint colors for image (must be imgWidth * imgHeight)
+ * @param imgWidth Image width
+ * @param imgHeight Image height
+ * @param searchX Offset X of 1st possible point for subimage
+ * @param searchY Offset Y of 1st possible point for subimage
+ * @param searchWidth Width for the search region
+ * @param searchHeight Height for the search region
+ * @param sub Pointer to uint colors for subimage (must be subWidth * subHeight)
+ * @param subWidth Subimage width
+ * @param subHeight Subimage height
+ * @param singleMode 0 whether search every image, non-0 - to stop after 1st found
+ * @return Ruby array with [x, y] entries - found positions of subimage
+ */
 static VALUE search_single_subimage(const unsigned int *img, const int imgWidth, const int imgHeight,
 		const int searchX, const int searchY, const int searchWidth, const int searchHeight,
 		const unsigned int *sub, const int subWidth, const int subHeight, int singleMode)
@@ -76,7 +120,12 @@ static VALUE search_single_subimage(const unsigned int *img, const int imgWidth,
 	return result;
 }
 
-/* convert image to int*, xfree must be used later */
+/** convert image with Ruby values to unsigned int*, xfree must be used later
+ * @param imgPixels Pointer to 1st element of Ruby array with data points (should be imgWidth * imgHeight)
+ * @param imgWidth Width of the image
+ * @param imgHeight Height of the image
+ * @return Pointer to unsigned int values, xfree must be used later
+ */
 static unsigned int *convert_image(const VALUE *imgPixels, const int imgWidth, const int imgHeight)
 {
 	unsigned int *imgReady = xmalloc(sizeof(unsigned int) * imgWidth * imgHeight);
@@ -89,6 +138,18 @@ static unsigned int *convert_image(const VALUE *imgPixels, const int imgWidth, c
 	return imgReady;
 }
 
+/** Exportable function to ruby, to search subimages in the image
+ * @param argc Amount of elements in argv
+ * @param argv Parameters:
+ *             img array of pixels, img width, img height,
+ *             search offset x, search offset y, search width, search height,
+ *             singleMode (bit 1 - for subimage search, bit 0 - to stop after 1st found subimage),
+ *             amount of subimages,
+ *             for every subimage:
+ *                 subimage array of pixels, subimage width, subimage height
+ * @param self Object
+ * @return Array of found subimages' positions
+ */
 VALUE search_subimages(int argc, VALUE *argv, VALUE self)
 {
 	/*
@@ -164,6 +225,7 @@ VALUE search_subimages(int argc, VALUE *argv, VALUE self)
 
 		rb_ary_push(result, r);
 
+		/* stop if the proper single mode and result is found */
 		if ((singleMode & 1) && RARRAY_LEN(r) > 0)
 			break;
 
@@ -175,6 +237,7 @@ VALUE search_subimages(int argc, VALUE *argv, VALUE self)
 	return result;
 }
 
+/** Entry point for an initialization */
 void Init_chunky_png_subimage()
 {
 	VALUE mainModule = rb_define_module("ChunkyPNGSubimage");
