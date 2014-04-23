@@ -6,7 +6,13 @@ Rake::ExtensionTask.new('chunky_png_subimage') do |ext|
   #ext.config_options = '--with-cflags="-std=c99"'
 end
 
-#require 'rspec/core/rake_task'
-#RSpec::Core::RakeTask.new(:spec)
+require 'rspec/core/rake_task'
 
-task :default => [:compile]
+RSpec::Core::RakeTask.new(:spec) do |task|
+  task.pattern = "./spec/spec.rb"
+  task.rspec_opts = ['--color']
+end
+
+Rake::Task['spec'].prerequisites << :compile
+
+task :default => [:spec]
